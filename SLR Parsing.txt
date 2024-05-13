@@ -1,0 +1,147 @@
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+struct GrammarItem {
+    char lhs;
+    char rhs[8];
+};
+
+const int MAX_PRODS = 20;
+const int MAX_ITEMS = 20;
+const int MAX_SYMBOLS = 26;
+
+char prod[MAX_PRODS][20];
+GrammarItem g[MAX_PRODS * 2], clos[MAX_ITEMS][MAX_PRODS * 2];
+int novar = 1, noitem = 0, arr[MAX_ITEMS];
+
+int isVariable(char variable) {
+    for (int i = 0; i < novar; i++) {
+        if (g[i].lhs == variable) {
+            return i + 1;
+        }
+    }
+    return 0;
+}
+
+void findClosure(int z, char a) {
+    int n = 0;
+    for (int i = 0; i < arr[z]; i++) {
+        for (int j = 0; j < strlen(clos[z][i].rhs); j++) {
+            if (clos[z][i].rhs[j] == '.' && clos[z][i].rhs[j + 1] == a) {
+                clos[noitem][n].lhs = clos[z][i].lhs;
+                strcpy(clos[noitem][n].rhs, clos[z][i].rhs);
+                char temp = clos[noitem][n].rhs[j];
+                clos[noitem][n].rhs[j] = clos[noitem][n].rhs[j + 1];
+                clos[noitem][n].rhs[j + 1] = temp;
+                n++;
+            }
+        }
+    }
+    arr[noitem] = n;
+
+    int flag = 0;
+    for (int i = 0; i < noitem; i++) {
+        if (arr[i] == n) {
+            for (int j = 0; j < arr[i]; j++) {
+                int c = 0;
+                for (int k = 0; k < arr[i]; k++) {
+                    if (clos[noitem][k].lhs == clos[i][k].lhs && strcmp(clos[noitem][k].rhs, clos[i][k].rhs) == 0) {
+                        c++;
+                    }
+                }
+                if (c == arr[i]) {
+                    flag = 1;
+                    break;
+                }
+            }
+        }
+        if (flag == 1) {
+            break;
+        }
+    }
+
+    if (flag == 0) {
+        arr[noitem++] = n;
+    }
+}
+
+int main() {
+    cout << "ENTER THE PRODUCTIONS OF THE GRAMMAR(0 TO END):\n";
+    int i = 0;
+    do {
+        cin >> prod[i++];
+    } while (strcmp(prod[i - 1], "0") != 0);
+
+    for (int n = 0; n < i - 1; n++) {
+        int m = 0, j = novar;
+        g[novar++].lhs = prod[n][0];
+        for (int k = 3; k < strlen(prod[n]); k++) {
+            if (prod[n][k] != '|') {
+                g[j].rhs[m++] = prod[n][k];
+            }
+            if (prod[n][k] == '|' || k == strlen(prod[n]) - 1) {
+                g[j].rhs[m] = '\0';
+                m = 0;
+                j = novar;
+                g[novar++].lhs = prod[n][0];
+            }
+        }
+    }
+
+    g[0].lhs = 'A';
+    char temp[2] = {g[1].lhs, '\0'};
+    strcat(g[0].rhs, temp);
+
+    cout << "\n\naugmented grammar\n";
+    for (int i = 0; i < novar; i++) {
+        cout << endl << g[i].lhs << "->" << g[i].rhs << " ";
+    }
+
+    for (int i = 0; i < novar; i++) {
+        clos[noitem][i].lhs = g[i].lhs;
+        strcpy(clos[noitem][i].rhs, g[i].rhs);
+        if (strcmp(clos[noitem][i].rhs, "ε") == 0) {
+            strcpy(clos[noitem][i].rhs, ".");
+        } else {
+            for (int j = strlen(clos[noitem][i].rhs) + 1; j >= 0; j--) {
+                clos[noitem][i].rhs[j] = clos[noitem][i].rhs[j - 1];
+            }
+            clos[noitem][i].rhs[0] = '.';
+        }
+    }
+    arr[noitem++] = novar;
+
+    for (int z = 0; z < noitem; z++) {
+        char list[10];
+        int l = 0;
+        for (int j = 0; j < arr[z]; j++) {
+            for (int k = 0; k < strlen(clos[z][j].rhs) - 1; k++) {
+                if (clos[z][j].rhs[k] == '.') {
+                    int m = 0;
+                    for (m = 0; m < l; m++) {
+                        if (list[m] == clos[z][j].rhs[k + 1]) {
+                            break;
+                        }
+                    }
+                    if (m == l) {
+                        list[l++] = clos[z][j].rhs[k + 1];
+                    }
+                }
+            }
+        }
+        for (int x = 0; x < l; x++) {
+            findClosure(z, list[x]);
+        }
+    }
+
+    cout << "\nTHE SET OF ITEMS ARE\n\n";
+    for (int z = 0; z < noitem; z++) {
+        cout << "I" << z << "\n\n";
+        for (int j = 0; j < arr[z]; j++) {
+            cout << clos[z][j].lhs << "->" << clos[z][j].rhs << "\n";
+        }
+    }
+
+    return 0;
+}

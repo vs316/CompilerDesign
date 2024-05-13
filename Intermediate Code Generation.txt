@@ -1,0 +1,39 @@
+Ex. 10: Intermediate Code Generation for if/while
+#include <stdio.h>
+
+int main()
+{
+	char if_condition[100];
+	char if_action[100];
+	int elif_count;
+	char elif_conditions[100][100];
+	char elif_actions[100][100];
+	char else_action[100];
+	printf("Enter IF condition: ");
+	scanf("%s", if_condition);
+	printf("Enter IF action: ");
+	scanf("%s", if_action);
+	printf("Enter number of ELSE IF blocks: ");
+	scanf("%d", &elif_count);
+	for (int i = 0; i < elif_count; i++) {
+		printf("Enter ELSE IF condition number %d: ", i + 1);
+		scanf("%s", elif_conditions[i]);
+		printf("Enter ELSE IF action number %d: ", i + 1);
+		scanf("%s", elif_actions[i]);
+	}
+	printf("Enter ELSE action: ");
+	scanf("%s", else_action);
+	printf("Intermediate Code:\n");
+	printf("if (%s) {\n", if_condition);
+	printf("	%s\n", if_action);
+	printf("} ");
+	for (int i = 0; i < elif_count; i++) {
+		printf("else if (%s) {\n", elif_conditions[i]);
+		printf("	%s\n", elif_actions[i]);
+		printf("} ");
+	}
+	printf("else {\n");
+	printf("	%s\n", else_action);
+	printf("}\n");
+	return 0;
+}

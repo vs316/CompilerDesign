@@ -1,0 +1,104 @@
+#include <iostream>
+#include <stack>
+#include <string>
+#include <cmath>
+
+using namespace std;
+
+// Define the type of nodes in the syntax tree
+enum NodeType
+{
+    OPERATOR,
+    VALUE
+};
+
+// Define the structure for each node in the syntax tree
+struct Node
+{
+    NodeType type;
+    char op;
+    double value;
+    Node *left;
+    Node *right;
+};
+
+// Function to create a new node
+Node *createNode(NodeType type, char op, double value)
+{
+    Node *newNode = new Node;
+    newNode->type = type;
+    newNode->op = op;
+    newNode->value = value;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+}
+
+// Function to traverse the syntax tree and perform arithmetic operations
+double evaluateSyntaxTree(Node *root)
+{
+    if (root == NULL)
+    {
+        return 0.0;
+    }
+
+    // If the node is a value node, return its value
+    if (root->type == VALUE)
+    {
+        return root->value;
+    }
+
+    // If the node is an operator node, perform the operation
+    double leftValue = evaluateSyntaxTree(root->left);
+    double rightValue = evaluateSyntaxTree(root->right);
+    switch (root->op)
+    {
+    case '+':
+        return leftValue + rightValue;
+    case '-':
+        return leftValue - rightValue;
+    case '*':
+        return leftValue * rightValue;
+    case '/':
+        if (rightValue == 0.0)
+        {
+            cerr << "Error: Division by zero\n";
+            exit(1);
+        }
+        return leftValue / rightValue;
+    case '^':
+        return pow(leftValue, rightValue);
+    default:
+        cerr << "Error: Unknown operator\n";
+        exit(1);
+    }
+}
+
+int main()
+{
+    // Example syntax tree: (+ (* 3 4) (^ 2 3))
+    Node *root = createNode(OPERATOR, '+', 0);
+    root->left = createNode(OPERATOR, '*', 0);
+    root->left->left = createNode(VALUE, '\0', 3);
+    root->left->right = createNode(VALUE, '\0', 4);
+    root->right = createNode(OPERATOR, '^', 0);
+    root->right->left = createNode(VALUE, '\0', 2);
+    root->right->right = createNode(VALUE, '\0', 3);
+
+    // Evaluate the syntax tree
+    double result = evaluateSyntaxTree(root);
+
+    // Output the result
+    cout << "Result: " << result << endl;
+
+    // Free memory
+    delete root->left->left;
+    delete root->left->right;
+    delete root->left;
+    delete root->right->left;
+    delete root->right->right;
+    delete root->right;
+    delete root;
+
+    return 0;
+}
