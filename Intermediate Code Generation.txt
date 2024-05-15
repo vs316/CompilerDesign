@@ -1,3 +1,98 @@
+python:
+
+class ThreeACGen:
+    def __init__(self):
+        self.code = []
+        self.temp_count = 0
+    
+    def gen_temp(self):
+        temp = f"t{self.temp_count}"
+        self.temp_count += 1
+        return temp
+    
+    def gen(self, op, arg1, arg2, res):
+        self.code.append((op, arg1, arg2, res))
+    
+    def gen_if(self, condition, true_label, false_label):
+        temp = self.gen_temp()
+        self.gen('==', condition, 'true', temp)
+        self.gen('if', temp, '', true_label)
+        self.gen('goto', '', '', false_label)
+    
+    def gen_while(self, condition, start_label, end_label):
+        temp = self.gen_temp()
+        self.gen('label', start_label, '', '')
+        self.gen('==', condition, 'true', temp)
+        self.gen('if', temp, '', end_label)
+        self.gen('goto', '', '', start_label)
+    
+    def print_code(self):
+        print("Generated three address code:")
+        for instruction in self.code:
+            print(f"{instruction[3]}={instruction[0]} {instruction[1]},{instruction[2]}")
+
+# Example usage
+gen = ThreeACGen()
+gen.gen_if('a', 'label1', 'label2')
+gen.gen_while('i', 'label2', 'label3')
+gen.print_code()
+
+c++:
+#include <iostream>
+#include <vector>
+#include <string>
+#include <tuple>
+
+class ThreeACGen {
+public:
+    ThreeACGen() : temp_count(0) {}
+
+    std::string gen_temp() {
+        return "t" + std::to_string(temp_count++);
+    }
+
+    void gen(const std::string& op, const std::string& arg1, const std::string& arg2, const std::string& res) {
+        code.emplace_back(op, arg1, arg2, res);
+    }
+
+    void gen_if(const std::string& condition, const std::string& true_label, const std::string& false_label) {
+        std::string temp = gen_temp();
+        gen("==", condition, "true", temp);
+        gen("if", temp, "", true_label);
+        gen("goto", "", "", false_label);
+    }
+
+    void gen_while(const std::string& condition, const std::string& start_label, const std::string& end_label) {
+        std::string temp = gen_temp();
+        gen("label", start_label, "", "");
+        gen("==", condition, "true", temp);
+        gen("if", temp, "", end_label);
+        gen("goto", "", "", start_label);
+    }
+
+    void print_code() const {
+        std::cout << "Generated three address code:" << std::endl;
+        for (const auto& instruction : code) {
+            std::cout << std::get<3>(instruction) << "=" << std::get<0>(instruction) 
+                      << " " << std::get<1>(instruction) << "," << std::get<2>(instruction) << std::endl;
+        }
+    }
+
+private:
+    std::vector<std::tuple<std::string, std::string, std::string, std::string>> code;
+    int temp_count;
+};
+
+int main() {
+    ThreeACGen gen;
+    gen.gen_if("a", "label1", "label2");
+    gen.gen_while("i", "label2", "label3");
+    gen.print_code();
+
+    return 0;
+}
+
+
 Ex. 10: Intermediate Code Generation for if/while
 #include <stdio.h>
 
